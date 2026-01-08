@@ -1,0 +1,25 @@
+<h1>Real Time Products</h1>
+
+<p id="error" style="color:red;"></p>
+
+<h2>Crear producto</h2>
+<form id="createForm">
+  <input name="title" placeholder="title" required />
+  <input name="price" type="number" placeholder="price" required />
+  <input name="code" placeholder="code" required />
+  <input name="stock" type="number" placeholder="stock" required />
+  <input name="category" placeholder="category" required />
+  <button type="submit">Crear</button>
+</form>
+
+<h2>Eliminar producto</h2>
+<form id="deleteForm">
+  <input name="id" placeholder="id del producto" required />
+  <button type="submit">Eliminar</button>
+</form>
+
+<h2>Lista en tiempo real</h2>
+<ul id="productsList"></ul>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/realtime.js"></script>
