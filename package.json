@@ -11,9 +11,9 @@
   "type": "module",
   "description": "",
   "dependencies": {
-    "express": "^5.1.0",
+    "express": "^5.2.1",
     "express-handlebars": "^8.0.1",
-    "socket.io": "^4.8.1",
+    "socket.io": "^4.8.3",
     "uuid": "^13.0.0"
   }
 }
