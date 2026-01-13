@@ -9,7 +9,7 @@ socket.on("array-productos", (products) => {
   productsList.innerHTML = "";
   for (const p of products) {
     const li = document.createElement("li");
-    li.innerHTML = `<b>${p.title}</b> - $${p.price} (id: ${p.id})`;
+    li.innerHTML = `<b>${p.title}</b> - $${p.price} (id: ${p._id})`;
     productsList.appendChild(li);
   }
 });
@@ -29,7 +29,7 @@ createForm.addEventListener("submit", (e) => {
     stock: Number(fd.get("stock")),
     category: fd.get("category"),
     status: true,
-    thumbnails: []
+    thumbnails: [],
   };
 
   socket.emit("new-product", payload);
@@ -38,8 +38,7 @@ createForm.addEventListener("submit", (e) => {
 
 deleteForm.addEventListener("submit", (e) => {
   e.preventDefault();
-
   const fd = new FormData(deleteForm);
-  socket.emit("delete-product", fd.get("id"));
+  socket.emit("delete-product", fd.get("id")); // ahora es _id de mongo
   deleteForm.reset();
 });

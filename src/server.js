@@ -1,55 +1,54 @@
 import express from "express";
+import dotenv from "dotenv";
 import { createServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
 import { engine } from "express-handlebars";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import { productManager } from "./managers/product-manager.js"; 
+import { initMongoDB } from "./config/mongodb.js";
 
 import viewsRouter from "./routes/views.router.js";
 import productsRouter from "./routes/products.router.js";
 import cartsRouter from "./routes/carts.router.js";
 
+import { ProductModel } from "./models/product.model.js";
+
+dotenv.config();
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const server = express();
-const port = 8080;
+const app = express();
+const PORT = process.env.PORT || 8080;
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, "public")));
 
-server.use(express.json());
-server.use(express.static(path.join(__dirname, "public")));
+app.engine("handlebars", engine());
+app.set("view engine", "handlebars");
+app.set("views", path.join(__dirname, "views"));
 
-
-server.engine("handlebars", engine());
-server.set("view engine", "handlebars");
-server.set("views", path.join(__dirname, "views"));
-
-
-const httpServer = createServer(server);
+const httpServer = createServer(app);
 const io = new SocketIOServer(httpServer);
 
+app.set("io", io);
 
-server.set("io", io);
+// Routers
+app.use("/", viewsRouter);
+app.use("/api/products", productsRouter);
+app.use("/api/carts", cartsRouter);
 
-/* ----------------------------- ROUTERS ----------------------------- */
-
-server.use("/", viewsRouter);
-
-
-server.use("/api/products", productsRouter);
-server.use("/api/carts", cartsRouter);
-
-/* ----------------------------- SOCKETS ----------------------------- */
-
+// Sockets realtime
 io.on("connection", async (socket) => {
-  socket.emit("array-productos", await productManager.getAll());
+  const products = await ProductModel.find().lean();
+  socket.emit("array-productos", products);
 
   socket.on("new-product", async (payload) => {
     try {
-      await productManager.create(payload);
-      io.emit("array-productos", await productManager.getAll());
+      await ProductModel.create(payload);
+      io.emit("array-productos", await ProductModel.find().lean());
     } catch (err) {
       socket.emit("errorMsg", err.message);
     }
@@ -57,14 +56,18 @@ io.on("connection", async (socket) => {
 
   socket.on("delete-product", async (id) => {
     try {
-      await productManager.delete(id);
-      io.emit("array-productos", await productManager.getAll());
+      await ProductModel.findByIdAndDelete(id);
+      io.emit("array-productos", await ProductModel.find().lean());
     } catch (err) {
       socket.emit("errorMsg", err.message);
     }
   });
 });
 
-httpServer.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
-});
+// Arranque seguro (sin top-level await raro)
+const start = async () => {
+  await initMongoDB();
+  httpServer.listen(PORT, () => console.log(`Server listening on port ${PORT}`));
+};
+
+start();

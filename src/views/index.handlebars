@@ -1,0 +1,35 @@
+<h1>Productos (con paginación)</h1>
+
+{{#if cid}}
+  <p>Carrito actual: <b>{{cid}}</b></p>
+{{else}}
+  <p style="color:gray;">
+    Tip: Para poder agregar al carrito desde acá, agregá <b>?cid=TU_CART_ID</b> a la URL.
+  </p>
+{{/if}}
+
+<ul>
+  {{#each products}}
+    <li>
+      <b>{{this.title}}</b> - ${{this.price}} - {{this.category}}
+      | <a href="/products/{{this._id}}{{#if ../cid}}?cid={{../cid}}{{/if}}">Ver detalle</a>
+      {{#if ../cid}}
+        | <form style="display:inline" method="post" action="/api/carts/{{../cid}}/product/{{this._id}}">
+            <button type="submit">Agregar al carrito</button>
+          </form>
+      {{/if}}
+    </li>
+  {{/each}}
+</ul>
+
+<div style="margin-top:16px;">
+  {{#if hasPrevPage}}
+    <a href="{{prevLink}}">⬅ Prev</a>
+  {{/if}}
+
+  <span> Página {{page}} de {{totalPages}} </span>
+
+  {{#if hasNextPage}}
+    <a href="{{nextLink}}">Next ➡</a>
+  {{/if}}
+</div>
