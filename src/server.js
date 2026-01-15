@@ -1,20 +1,18 @@
+import "dotenv/config";
 import express from "express";
-import dotenv from "dotenv";
 import { createServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
 import { engine } from "express-handlebars";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import { initMongoDB } from "./config/mongodb.js";
+import { initMongoDB } from "./config/connection.js";
 
 import viewsRouter from "./routes/views.router.js";
 import productsRouter from "./routes/products.router.js";
 import cartsRouter from "./routes/carts.router.js";
 
 import { ProductModel } from "./models/product.model.js";
-
-dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -64,10 +62,11 @@ io.on("connection", async (socket) => {
   });
 });
 
-// Arranque seguro (sin top-level await raro)
 const start = async () => {
   await initMongoDB();
-  httpServer.listen(PORT, () => console.log(`Server listening on port ${PORT}`));
+  httpServer.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server listening on port ${PORT}`);
+  });
 };
 
 start();
